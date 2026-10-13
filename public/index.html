@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İrşad Kitapevi Gaziantep | Ana Sayfa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="resimler/logo.png">
+
+    <!-- Masaüstü düzeni için CSS Grid ayarı -->
+    <style>
+        @media (min-width: 769px) {
+            .desktop-grid-layout {
+                display: grid;
+                grid-template-columns: 270px 1fr;
+                gap: 35px;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 0 5%;
+                align-items: start;
+            }
+            .mobil-filtre-yan-yana { display: contents; }
+            .desktop-grid-layout .categories-section {
+                grid-column: 1 / -1;
+                margin: 30px 0 40px 0 !important;
+                width: 100%;
+            }
+            .desktop-grid-layout .filter-sidebar { grid-column: 1 / 2; }
+            .desktop-grid-layout .products-showcase { grid-column: 2 / 3; }
+            .products-section-layout { padding-top: 0 !important; }
+        }
+    </style>
+
+<!-- Google Site Adı (Site Name) Yapısal Verisi -->
+<script type="application/ld+json">
+{
+  "@context" : "https://schema.org",
+  "@type" : "WebSite",
+  "name" : "İrşad Kitapevi Gaziantep",
+  "alternateName": ["İrşad Kitapevi", "İrşad Hediyelik"],
+  "url" : "https://irsadkitapevi.com.tr/"
+}
+</script>
+<meta property="og:site_name" content="İrşad Kitapevi Gaziantep" />
+
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+        <div class="logo-area">
+            <div class="logo-symbol">
+                <i class="fas fa-mosque"></i>
+            </div>
+            <div class="logo-text">
+                <a href="index.html">
+                    <span class="brand-name">İRŞAD</span>
+                    <span class="brand-tagline">HEDİYELİK & TESBİH & HAC</span>
+                </a>
+            </div>
+        </div>
+        <div class="nav-icons">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Ürün Ara..." autocomplete="off">
+                </div>
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
+            <a href="#" class="nav-icon-btn" id="cartBtn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="cartCount">0</span>
+            </a>
+            <a href="admin.html" class="nav-icon-btn" id="adminPanelBtn" style="display: none; background: #c5a059; color: #1a1a1a; padding: 5px 15px; border-radius: 5px; text-decoration: none; margin-left: 15px;">
+                <i class="fas fa-cog"></i>
+                <span style="font-size: 13px; font-weight: 600; margin-left: 5px;">Admin Paneli</span>
+            </a>
+            <a href="login.html" class="nav-icon-btn" id="authBtn" style="margin-left: 15px; text-decoration: none;">
+                <i class="fas fa-user"></i>
+                <span id="authBtnText" style="font-size: 13px; font-weight: 500; margin-left: 5px;">Giriş Yap</span>
+            </a>
+        </div>
+    </nav>
+  </header>
+
+ <!-- KORUNAN GİRİŞ HERO ALANI -->
+  <section id="heroSection" class="hero-section">
+    <div class="hero-content">
+        <!-- script.js üzerinden erişebilmek için id'ler eklendi -->
+        <h1 id="heroTitle">1955'den Günümüze</h1>
+        <p id="heroDesc">En Kaliteli ve Çeşitli Hediyelikler, Tesbihler Ve Birbirinden Kıymetli Ürünler İle Hizmetinizdeyiz.</p>
+    </div>
+  </section>
+
+  <!-- ÖNE ÇIKAN ÖZEL KAMPANYALAR (CANLI MOTİFLİ BÖLÜM) -->
+  <section class="promo-grid-section">
+    
+    <!-- MOTİFLİ BAŞLIK ALANI -->
+    <div class="promo-title-wrapper">
+        <div class="promo-title-badge">
+            <i class="fas fa-star"></i> Özel Fırsatlar
+        </div>
+        <h2>İndirimli & Kampanyalı Ürünler</h2>
+        <div class="promo-title-line">
+            <span>✦ ◈ ✦</span>
+        </div>
+        <p>Sizin için seçtiğimiz en özel koleksiyonları ve sınırlı sayıdaki fırsatları keşfedin</p>
+    </div>
+
+    <!-- JavaScript ile yüklenecek promo kutuları -->
+    <div class="promo-grid-container" id="promoGridContainer">
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #c5a059;">
+            <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+            <p style="margin-top: 12px; font-weight: 600; font-size: 15px;">Fırsat Ürünleri Yükleniyor...</p>
+        </div>
+    </div>
+  </section>
+
+  <!-- ANA ÜRÜN VE KATEGORİ YERLEŞİMİ -->
+  <section class="products-section-layout">
+      <div class="desktop-grid-layout">
+          
+          <!-- MOBİLDE YAN YANA GÖRÜNECEK SARICI DİV -->
+          <div class="mobil-filtre-yan-yana">
+              
+              <!-- KATEGORİLER -->
+              <section class="categories-section" id="kategoriler">
+                  <div class="section-title">
+                      <h2>Kategoriler</h2>
+                      <div class="title-line"></div>
+                  </div>
+                  <div class="categories-grid" id="dinamikKategorilerKutusu">
+                      <div style="text-align:center; grid-column: 1/-1; color:#888; font-style:italic;">Kategoriler yükleniyor...</div>
+                  </div>
+              </section>
+
+              <!-- KOLEKSİYON / FİLTRELER -->
+              <aside class="filter-sidebar">
+                  <h3>Kategorilere Göre Filtreleme</h3>
+                  <div class="filter-group" id="dinamikTiplerKutusu">
+                      <button class="filter-btn active" data-tip="all">Tüm Koleksiyonlar</button>
+                  </div>
+              </aside>
+              
+          </div>
+
+          <!-- ÜRÜNLER VİTRİNİ -->
+          <main class="products-showcase">
+              <div id="kategoriBasligiAlani">
+                  <h2 class="current-category-title" id="seciliKategoriIsmi">Tüm Ürünler</h2>
+              </div>
+              <div class="products-grid" id="urunlerVitrini"></div>
+              <div id="scrollSentinel" style="height: 20px; margin-top: 10px;"></div>
+          </main>
+          
+      </div>
+  </section>
+
+  <div class="bottom-divider"></div>
+
+  <!-- ÜRÜN DETAY MODAL -->
+  <div id="productModal" class="product-modal">
+      <div class="modal-card">
+          <button class="modal-close-btn" id="modalClose">×</button>
+          <div class="modal-grid">
+              <div class="modal-img-area">
+                  <img id="modalImg" src="" alt="Ürün Görseli">
+              </div>
+              <div class="modal-info-area">
+                  <h2 id="modalTitle">Ürün Adı</h2>
+                  <div class="modal-price" id="modalPrice">0.00 TL</div>
+                  <p class="modal-desc" id="modalDesc">Ürün açıklaması burada yer alacak.</p>
+                  <div class="quantity-area">
+                      <label>Adet:</label>
+                      <div class="qty-stepper">
+                          <button id="qtyMinus">-</button>
+                          <input type="number" id="qtyInput" value="1" min="1">
+                          <button id="qtyPlus">+</button>
+                      </div>
+                  </div>
+                  <button class="add-to-cart-big-btn" id="modalAddToCartBtn">
+                      <i class="fas fa-shopping-bag"></i> Sepete Ekle
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- SEPET SIDEBAR -->
+  <div id="cartSidebar" class="cart-sidebar">
+      <div class="cart-sidebar-header">
+          <h3><i class="fas fa-shopping-bag"></i> Sepetiniz</h3>
+          <button id="cartSidebarClose" class="cart-close-btn">×</button>
+      </div>
+      <div class="cart-sidebar-body" id="sepetUrunListesi"></div>
+      <div class="cart-sidebar-footer">
+          <div class="cart-total-row">
+              <span>Toplam Tutar:</span>
+              <span id="sepetToplamTutar">0.00 TL</span>
+          </div>
+          <button class="whatsapp-order-btn" id="whatsappOrderBtn">
+              <i class="fab fa-whatsapp"></i> Siparişi Tamamla (WhatsApp)
+          </button>
+      </div>
+  </div>
+
+  <!-- MOBİL ALT MENÜ -->
+  <div class="mobile-bottom-bar">
+      <a href="index.html" class="mobile-bar-item active">
+          <i class="fas fa-home"></i> <span>Ana Sayfa</span>
+      </a>
+      <a href="#" class="mobile-bar-item" id="mobileCartBtn">
+          <div class="mobile-cart-icon-wrap">
+              <i class="fas fa-shopping-bag"></i> <span class="mobile-badge">0</span>
+          </div>
+          <span>Sepetim</span>
+      </a>
+      <a href="admin.html" class="mobile-bar-item" id="mobileAdminBtn" style="color: #c5a059;">
+          <i class="fas fa-cog"></i> <span>Panel</span>
+      </a>
+      <a href="login.html" class="mobile-bar-item" id="mobileAuthBtn">
+          <i class="fas fa-user"></i> <span id="mobileAuthText">Giriş</span>
+      </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-container">
+        <div class="footer-block brand-block">
+            <div class="footer-logo">
+                <i class="fas fa-mosque"></i>
+                <h2>İRŞAD HEDİYELİK</h2>
+            </div>
+            <p class="footer-text">Gaziantep'ten tüm Türkiye'ye en kaliteli hediyelik eşyaları, tesbihleri, hac umre ve İslami hediyelik eşyalarını güvenle ulaştırıyoruz.</p>
+        </div>
+        <div class="footer-block contact-block">
+            <h3>İletişim Bilgileri</h3>
+            <ul class="footer-contact-list">
+                <li>
+                    <i class="fas fa-phone-alt"></i> 
+                    <div>
+                        <span>Telefon Numarası</span> 
+                        <a id="footer-tel-link" href="tel:+905301445190"><span id="footer-tel-text">+90 (530) 144 51 90</span></a>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-envelope"></i> 
+                    <div>
+                        <span>E-Posta Adresi</span> 
+                        <a href="mailto:irsadhachediyelik@gmail.com">irsadhachediyelik@gmail.com</a>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-map-marker-alt"></i> 
+                    <div>
+                        <span>Akkent Şube</span> 
+                        <p>Akkent Mahallesi, 400. Cadde Şahinbey Millet Camii Külliyesi (Avlu) İrşad Hac & Hediyelik</p>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-store"></i> 
+                    <div>
+                        <span>Merkez Şube</span> 
+                        <p>Eski Saray Cadde Karagöz Mah. Büyük Pasaj Altı</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 İrşad Hac & Hediyelik & Tesbih. Tüm Hakları Saklıdır.</p>
+    </div>
+  </footer>
+
+  <!-- YUKARI ÇIK BUTONU -->
+  <button id="scrollTopBtn" title="Yukarı Çık" style="display: none; position: fixed; bottom: 80px; right: 20px; z-index: 999; border: none; outline: none; background-color: #c5a059; color: white; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; display: flex; justify-content: center; align-items: center;">
+      <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <!-- PROFİL MODAL -->
+  <div id="profileModal" class="profile-modal">
+      <div class="profile-modal-card">
+          <div class="profile-modal-header">
+              <h3><i class="fas fa-user-circle"></i> Profilim</h3>
+              <button class="profile-close-btn" onclick="profilModalKapat()">&times;</button>
+          </div>
+          <div class="profile-modal-body">
+              <div class="user-profile-card">
+                  <div class="user-avatar-icon">
+                      <i class="fas fa-user"></i>
+                  </div>
+                  <div class="user-info">
+                      <h4 id="profileUserName">Yükleniyor...</h4>
+                      <p id="profileUserEmail"><i class="fas fa-envelope"></i> -</p>
+                      <p id="profileUserPhone"><i class="fas fa-phone"></i> -</p>
+                  </div>
+              </div>
+
+              <div class="past-orders-section">
+                  <h4><i class="fas fa-shopping-bag"></i> Geçmiş Siparişlerim</h4>
+                  <div id="profileOrdersList" class="orders-list"></div>
+              </div>
+          </div>
+          <div class="profile-modal-footer">
+              <button class="profile-logout-btn" onclick="cikisYap()">
+                  <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <script src="js/script.js?v=6"></script>
+</body>
+</html>

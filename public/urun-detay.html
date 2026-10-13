@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ürün Detayı | İrşad Hac ve Hediyelik</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo-area">
+                <div class="logo-symbol"><i class="fas fa-mosque"></i></div>
+                <div class="logo-text">
+                    <a href="index.html" style="text-decoration: none;">
+                        <span class="brand-name">İRŞAD</span>
+                        <span class="brand-tagline">HAC & HEDİYELİK</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-icons">
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="search-input" placeholder="Ürün veya kategori arayın..." autocomplete="off">
+                        <i class="fas fa-search"></i>
+                        <div id="searchSuggestions" class="search-results-dropdown"></div>
+                    </div>
+                </div>
+                <div class="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- YÖNLENDİRME ÇUBUĞU VE GERİ DÖN BUTONU -->
+    <div class="detail-breadcrumb">
+        <div class="breadcrumb-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <a href="index.html"><i class="fas fa-home"></i> Ana Sayfa</a>
+                <i class="fas fa-chevron-right separator"></i>
+                <a href="#" id="breadCategory">Kategori</a>
+                <i class="fas fa-chevron-right separator"></i>
+                <span id="breadProduct">Ürün</span>
+            </div>
+            
+            <!-- GERİ DÖN BUTONU -->
+            <a href="javascript:history.back()" style="text-decoration: none; color: #1a1a1a; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; background: #f4f4f4; padding: 6px 14px; border-radius: 20px; transition: all 0.2s ease;">
+                <i class="fas fa-arrow-left" style="color: #c5a059;"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <main class="product-detail-section">
+        <div class="detail-container">
+            
+            <div class="detail-left">
+                <div class="detail-image-box">
+                    <img id="detailImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='800'%3E%3Crect width='600' height='800' fill='%23eee'/%3E%3C/svg%3E" alt="Ürün Resmi">
+                </div>
+            </div>
+
+            <div class="detail-right">
+                <span id="detailBadge" class="detail-badge">Lüks Seri</span>
+                <h1 id="detailTitle">Ürün Adı Yükleniyor...</h1>
+                
+                <div class="detail-price-box">
+                    <span id="detailPrice" class="detail-price">0.00 TL</span>
+                    <span class="stock-status"><i class="fas fa-check-circle"></i> Stokta Var</span>
+                </div>
+
+                <div class="detail-description">
+                    <h3>Ürün Özellikleri</h3>
+                    <p id="detailDesc">
+                        Bu ürünün detaylı açıklaması veritabanından çekilmektedir. 
+                        İrşad Hac ve Hediyelik güvencesiyle en kaliteli malzemelerden üretilmiştir.
+                    </p>
+                </div>
+
+                <div class="detail-actions">
+                    <div class="quantity-selector">
+                        <button id="qtyMinus"><i class="fas fa-minus"></i></button>
+                        <input type="number" id="qtyInput" value="1" min="1" readonly>
+                        <button id="qtyPlus"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <button id="detailAddToCart" class="add-to-cart-large">
+                        <i class="fas fa-shopping-cart"></i> Sepete Ekle
+                    </button>
+                </div>
+
+                <div class="extra-info-box">
+                    <div class="info-item">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <strong>Hızlı Teslimat</strong>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>Güvenli Alışveriş</strong>
+                            <span>Yılların deneyimi ve güvencesiyle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CROSS-SELLING ALANI -->
+    <section class="cross-sell-section">
+        <div class="section-title cross-sell-title">
+            <span class="cross-sell-badge"><i class="fas fa-gem"></i> Sizin İçin Seçtik</span>
+            <h2>Şunlar da İlginizi Çekebilir</h2>
+            <div class="cross-sell-line"><span>✦ ◈ ✦</span></div>
+            <p>Bu ürünle birlikte en çok tercih edilen seçkin ürünlerimiz</p>
+        </div>
+        <div class="products-grid" id="ilgiliUrunlerGrid">
+            <p style="text-align:center; color:#888; grid-column: 1/-1;">Önerilen ürünler yükleniyor...</p>
+        </div>
+    </section>
+    
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-block brand-block">
+                <div class="footer-logo">
+                    <i class="fas fa-mosque"></i>
+                    <span>İRŞAD HAC & HEDİYELİK</span>
+                </div>
+                <p>Hac, Umre ve en özel dini hediyelik ürünleriniz için kalitenin ve güvenin adresi.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 İrşad Hac & Hediyelik. Tüm Hakları Saklıdır.</p>
+        </div>
+    </footer>
+
+    <div class="mobile-footer-nav">
+        <a href="index.html"><i class="fas fa-home"></i><span>Ana Sayfa</span></a>
+        <a href="index.html#kategoriler"><i class="fas fa-th-large"></i><span>Keşfet</span></a>
+        <a href="#" class="mobile-cart-trigger"><i class="fas fa-shopping-bag"></i><span>Sepetim</span><span class="mobile-badge">0</span></a>
+    </div>
+
+    <!-- YUKARI ÇIK BUTONU -->
+    <button id="scrollTopBtn" title="Yukarı Çık" style="position: fixed; bottom: 30px; right: 30px; background: #c5a059; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 20px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; transition: opacity 0.3s;">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <script src="js/script.js?v=6"></script>
+</body>
+</html>

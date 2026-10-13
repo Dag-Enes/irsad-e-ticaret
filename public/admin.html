@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>İrşad Hediyelik - Yönetim Paneli</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-style.css?v=6">
+</head>
+
+<body style="display: none;">
+
+    <!-- MOBİL ÜST BAR VE MENÜ BUTONU -->
+    <div class="mobile-header-bar">
+        <div class="sidebar-brand mobile-brand">
+            <div class="logo-symbol">İ</div>
+            <h2>İRŞAD <span>PANEL</span></h2>
+        </div>
+        <button class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Menüyü Aç/Kapat">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-container">
+        <!-- SOL MENÜ (SIDEBAR) -->
+        <aside class="sidebar" id="adminSidebar">
+            <div class="sidebar-brand">
+                <div class="logo-symbol">İ</div>
+                <h2>İRŞAD <span>PANEL</span></h2>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-target="orders-section">
+                    <i class="fas fa-shopping-bag"></i> Sipariş Yönetimi
+                </a>
+                <a href="#" class="menu-item" data-target="products-section">
+                    <i class="fas fa-box"></i> Ürün Yönetimi
+                </a>
+                <a href="#" class="menu-item" data-target="kullanicilarSection">
+                    <i class="fas fa-users"></i> Kullanıcı Yönetimi
+                </a>
+                <a href="#" class="menu-item" data-target="indirim-kutulari-section">
+                    <i class="fas fa-tags"></i> İndirim Kutuları
+                </a>
+                <a href="#" class="menu-item" data-target="settings-section">
+                    <i class="fas fa-cog"></i> Site Ayarları
+                </a>
+
+                <a href="index.html" class="menu-item back-site">
+                    <i class="fas fa-arrow-left"></i> Siteye Dön
+                </a>
+            </nav>
+        </aside>
+
+        <!-- SAĞ İÇERİK ALANI -->
+        <main class="main-content">
+
+            <!-- 1. SİPARİŞ YÖNETİMİ -->
+            <section id="orders-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Sipariş Yönetimi</h2>
+                    <p>Aktif ve geçmiş müşteri siparişlerini buradan takip edip güncelleyebilirsiniz.</p>
+                </div>
+
+                <!-- 🔎 SİPARİŞ ARAMA -->
+                <div class="order-search-bar">
+                    <div class="admin-search-wrapper order-search">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="siparisAraInput" placeholder="Sipariş kodu, müşteri adı, e-posta veya telefon ara..." autocomplete="off" maxlength="60">
+                    </div>
+                    <button type="button" class="btn-secondary" id="siparisAramaTemizle" style="display:none;"><i class="fas fa-times"></i> Temizle</button>
+                    <span id="siparisAramaBilgi" class="order-search-info"></span>
+                </div>
+
+                <h3 class="sub-section-title active-title">Aktif Siparişler</h3>
+                <div class="table-container mb-30">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş Kodu</th>
+                                <th>Müşteri</th>
+                                <th>Tarih</th>
+                                <th>Ürünler</th>
+                                <th>Toplam Tutar</th>
+                                <th class="text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aktif-siparisler-body"></tbody>
+                    </table>
+                </div>
+                <div class="pagination-right-wrapper mb-30">
+                    <button class="btn-secondary" onclick="aktifSiparisSayfaDegistir('geri')">
+                        <i class="fas fa-chevron-left"></i> Önceki Sayfa
+                    </button>
+                    <button class="btn-secondary" onclick="aktifSiparisSayfaDegistir('ileri')">
+                        Sonraki Sayfa <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <h3 class="sub-section-title muted-title">Geçmiş Siparişler</h3>
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş Kodu</th>
+                                <th>Müşteri</th>
+                                <th>Tarih</th>
+                                <th>Ürünler</th>
+                                <th>Toplam Tutar</th>
+                                <th class="text-center">Durum</th>
+                                <th class="text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gecmis-siparisler-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-right-wrapper mt-15">
+                    <button class="btn-secondary" onclick="gecmisSiparisSayfaDegistir('geri')">
+                        <i class="fas fa-chevron-left"></i> Önceki Sayfa
+                    </button>
+                    <button class="btn-secondary" onclick="gecmisSiparisSayfaDegistir('ileri')">
+                        Sonraki Sayfa <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. ÜRÜN YÖNETİMİ -->
+            <section id="products-section" class="content-section">
+                <div class="section-header">
+                    <h2>Ürün Yönetimi</h2>
+                    <p>Mağazadaki ürün kataloğunu inceleyin, düzenleyin veya yeni ürünler ekleyin.</p>
+                </div>
+
+                <div class="products-top-bar">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Sistemdeki Aktif Ürün</span>
+                            <div id="toplamUrunSayisi" class="stat-value">0</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="urunAraInput" placeholder="Ürün adı, kategori veya tip ara...">
+                    </div>
+
+                    <button class="btn-primary" onclick="urunModalAc()">
+                        <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Görsel</th>
+                                <th>Ürün Adı</th>
+                                <th>Kategori</th>
+                                <th>Koleksiyon / Tip</th>
+                                <th>Fiyat</th>
+                                <th class="text-center">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUrunListesi"></tbody>
+                    </table>
+                </div>
+
+                <div id="urunPagination" class="pagination-container"></div>
+            </section>
+
+            <!-- 3. KULLANICI YÖNETİMİ -->
+            <section id="kullanicilarSection" class="content-section">
+                <div class="section-header">
+                    <h2>Kullanıcı Yönetimi</h2>
+                    <p>Sitenize üye olan müşterilerin listesi. (Admin hesapları güvenlik nedeniyle gizlidir)</p>
+                </div>
+
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Müşteri Adı</th>
+                                <th>E-Posta Adresi</th>
+                                <th>Telefon Numarası</th>
+                                <th>Kayıt Tarihi</th>
+                                <th class="text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kullanicilarTabloGövde"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-right-wrapper mt-15">
+                    <button class="btn-secondary" onclick="kullaniciSayfaDegistir('geri')">
+                        <i class="fas fa-chevron-left"></i> Önceki Sayfa
+                    </button>
+                    <button class="btn-secondary" onclick="kullaniciSayfaDegistir('ileri')">
+                        Sonraki Sayfa <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 5. KAMPANYALI ÜRÜNLER (SINIRSIZ) -->
+            <section id="indirim-kutulari-section" class="content-section">
+                <div class="section-header flex-between"
+                    style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2><i class="fas fa-tags"></i> İndirim & Kampanya Yönetimi</h2>
+                        <p>Sitede sergilenecek kampanyalı ürünleri 3'erli gruplar halinde, en fazla 12 adet olacak şekilde ekleyin veya kaldırın.</p>
+                    </div>
+                    <button class="btn-primary" onclick="yeniKampanyaKutusuEkle()">
+                        <i class="fas fa-plus"></i> Yeni Kampanya Grubu Ekle (+3)
+                    </button>
+                </div>
+
+                <div class="indirim-kutulari-grid" id="indirimKutulariContainer">
+                    <!-- Dinamik Kampanya Kartları JS ile Yüklenecek -->
+                </div>
+            </section>
+
+            <!-- 6. SİTE AYARLARI -->
+            <section id="settings-section" class="content-section">
+                <div class="section-header">
+                    <h2>Site Ayarları</h2>
+                    <p>Ana sayfa hero görselini ve iletişim numaralarını buradan ayrı ayrı yönetebilirsiniz.</p>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- 1. KUTU: HERO ALANI YÖNETİMİ -->
+                    <div class="admin-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-image"></i> Ana Sayfa En üst Kısım Görseli
+                        </h3>
+
+                        <form id="heroFormu">
+                            <div class="form-group mb-15">
+                                <label for="heroBaslikInput">Başlık Yazısı:</label>
+                                <input type="text" id="heroBaslikInput" placeholder="Örn: 1955'den Günümüze">
+                            </div>
+
+                            <div class="form-group mb-15">
+                                <label for="heroAltMetinInput">Alt Açıklama Metni:</label>
+                                <textarea id="heroAltMetinInput" rows="3"
+                                    placeholder="Örn: En Kaliteli ve Çeşitli Hediyelikler..."></textarea>
+                            </div>
+
+                            <div class="form-group mb-20">
+                                <label for="heroResimInput">Arka Plan Fotoğrafı (İsteğe Bağlı):</label>
+                                <input type="file" id="heroResimInput" accept="image/*" class="file-input">
+                                <small class="form-help-text">
+                                    Sadece yazıları değiştirmek istiyorsanız görsel seçmenize gerek yoktur.
+                                </small>
+                                <div id="heroResimOnizleme" class="mt-10"></div>
+                            </div>
+
+                            <button type="submit" class="btn-primary w-100 btn-center">
+                                <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 2. KUTU: İLETİŞİM NUMARALARI YÖNETİMİ -->
+                    <div class="admin-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-phone-alt"></i> İletişim Numaraları
+                        </h3>
+
+                        <form id="telefonFormu">
+                            <div class="form-group">
+                                <label for="ayarTel1">1. Sipariş Numarası (WhatsApp) *</label>
+                                <input type="text" id="ayarTel1" placeholder="Örn: 0505 659 27 23" required>
+                                <small class="form-help-text">
+                                    Müşterilerin sepetten verdiği siparişler bu numaranın WhatsApp'ına iletilir.
+                                </small>
+                            </div>
+
+                            <div class="form-group mt-20">
+                                <label for="ayarTel2">2. İletişim Numarası (Sitede görünür)</label>
+                                <input type="text" id="ayarTel2" placeholder="Örn: 0530 144 51 90">
+                                <small class="form-help-text">
+                                    Sitenin alt kısmındaki (iletişim bölümü) telefon numarasıdır. Boş bırakırsanız
+                                    1. numara görünür.
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn-primary w-100 btn-center mt-25">
+                                <i class="fas fa-save"></i> Numaraları Kaydet
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ÜRÜN EKLE/DÜZENLE MODAL -->
+    <div id="urunModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalBaslik">Yeni Ürün Ekle</h2>
+                <span class="close-btn" onclick="urunModalKapat()">&times;</span>
+            </div>
+
+            <form id="urunFormu">
+                <input type="hidden" id="editUrunId" value="">
+
+                <div class="form-group">
+                    <label>Ürün Başlığı *</label>
+                    <input type="text" id="urunBaslik" placeholder="Örn: Lüks İnci Tesbih" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kategori *</label>
+                        <input type="text" id="urunKategori" list="kategoriListesi"
+                            placeholder="BÜYÜK HARFLER Örn:TESBİHLER" required autocomplete="off"
+                            style="text-transform: uppercase;"
+                            oninput="this.value = this.value.toLocaleUpperCase('tr-TR')">
+                        <datalist id="kategoriListesi">
+                            <option value="Tesbihler"></option>
+                            <option value="Seccadeler"></option>
+                            <option value="Kuran-ı Kerim"></option>
+                            <option value="Hac Kıyafetleri"></option>
+                            <option value="Esans & Parfüm"></option>
+                            <option value="Hediyelik Setler"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Koleksiyon / Tip</label>
+                        <input type="text" id="urunTip" list="tipListesi" placeholder="Örn: LÜKS SERİ"
+                            style="text-transform: uppercase;"
+                            oninput="this.value = this.value.toLocaleUpperCase('tr-TR')">
+                        <datalist id="tipListesi"></datalist>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fiyat (TL) <span class="help-label-inline">(Boş bırakırsanız veya 0 yazarsanız "Fiyat
+                            Sorunuz" olur)</span></label>
+                    <input type="number" id="urunFiyat" min="0" step="0.01" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Ürün Görseli <span id="resimZorunluNotu" class="text-gold">*</span></label>
+                    <input type="file" id="urunResim" accept="image/*" class="file-input">
+                    <small id="mevcutResimNotu" class="form-help-text display-none">
+                        Yeni resim seçmezseniz eski dükkan resmi kalır.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>Ürün Açıklaması</label>
+                    <textarea id="urunAciklama" rows="4"
+                        placeholder="Ürün özelliklerini buraya yazabilirsiniz..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="urunModalKapat()">İptal</button>
+                    <button type="submit" class="btn-primary" id="kaydetBtn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/admin-script.js?v=7"></script>
+</body>
+
+</html>
