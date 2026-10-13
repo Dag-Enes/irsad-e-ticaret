@@ -43,9 +43,7 @@ const BACKEND_URL = isLocal ? 'http://localhost:5000' : '';
         localStorage.removeItem('irsad_kullanici_bilgi');
         window.location.href = 'login.html';
     }
-})();
-
-// MOBİL MENÜ TETİKLEME FONKSİYONLARI
+})();
 document.addEventListener("DOMContentLoaded", () => {
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const sidebar = document.querySelector('.sidebar');
@@ -63,9 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         sidebarOverlay.addEventListener('click', mobilMenuyuKapat);
-    }
-
-    // 1. SOL MENÜ (TAB) GEÇİŞ MEKANİZMASI (HAFIZALI)
+    }
     const menuItems = document.querySelectorAll('.menu-item');
     const sections = document.querySelectorAll('.content-section');
     const aktifSekme = localStorage.getItem('irsad_admin_sekme') || 'orders-section';
@@ -90,9 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (targetId === 'indirim-kutulari-section' && typeof indirimKutulariniYukle === 'function') {
             indirimKutulariniYukle();
-        }
-
-        // Tıklanınca mobilde menüyü otomatik kapat
+        }
         mobilMenuyuKapat();
     }
 
@@ -121,10 +115,7 @@ let siparisIstekNo = 0; // art arda yazarken eski cevapların yenisini ezmesini 
 let kullaniciMevcutSayfa = 1;
 const sayfaBasinaKayitSayisi = 15;
 
-const tokenGetir = () => localStorage.getItem('irsad_token') || "";
-
-// 📱 Telefondan seçilen büyük fotoğrafları yüklemeden önce küçültür (hızlı yükleme, mobil veride tasarruf,
-// sunucu dosya boyutu sınırına takılmaz, iPhone HEIC fotoğrafları da JPEG'e dönüşür). Küçültme başarısız olursa orijinal dosya gönderilir.
+const tokenGetir = () => localStorage.getItem('irsad_token') || "";
 async function resmiKucult(dosya, maksKenar = 2000, kalite = 0.88) {
     try {
         if (!dosya || !dosya.type || !dosya.type.startsWith('image/')) return dosya;
@@ -162,19 +153,13 @@ async function resmiKucult(dosya, maksKenar = 2000, kalite = 0.88) {
         console.warn('Fotoğraf küçültülemedi, orijinali gönderiliyor:', hata);
         return dosya;
     }
-}
-
-// 🛡️ GÜVENLİK: Sunucudan gelen her metin ekrana basılmadan önce bu fonksiyondan geçirilmelidir (XSS koruması)
+}
 function escapeHtml(deger) {
     if (deger === null || deger === undefined) return '';
     return String(deger)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// ==========================================
-// 2. SİPARİŞLERİ SUNUCUDAN ÇEKİP TABLOYA YAZDIRMA
-// ==========================================
+}
 async function siparisleriYukle() {
     const istekNo = ++siparisIstekNo;
     const aramaParam = `&arama=${encodeURIComponent(siparisAramaKelimesi)}`;
@@ -323,9 +308,7 @@ window.siparisSil = async function(siparisId) {
         console.error("Silme işlemi sırasında hata:", error);
         alert("Sunucuyla bağlantı kurulamadı!");
     }
-};
-
-// 3. ÜRÜNLERİ SUNUCUDAN ÇEKME
+};
 async function urunleriYukle(sayfaNumarasi = 1) {
     try {
         urunMevcutSayfa = sayfaNumarasi;
@@ -414,9 +397,7 @@ function sayfalamaButonlariniOlustur(toplamSayfa) {
         }
     };
     paginationContainer.appendChild(nextBtn);
-}
-
-// 4. ÜRÜN SİLME VE DÜZENLEME MOTORLARI
+}
 window.urunSil = async function(id) {
     if (!confirm("Bu ürünü tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz!")) return;
     try {
@@ -450,9 +431,7 @@ window.urunDuzenle = function(id) {
     if(document.getElementById('resimZorunluNotu')) document.getElementById('resimZorunluNotu').style.display = 'none';
     filtreOnerileriniYukle();
     document.getElementById('urunModal').classList.add('open');
-};
-
-// 5. AKILLI ÖNERİ SİSTEMİ
+};
 async function filtreOnerileriniYukle() {
     try {
         const response = await fetch(`${API_URL}/admin/benzersiz-filtreler`, {
@@ -470,9 +449,7 @@ async function filtreOnerileriniYukle() {
     } catch (error) {
         console.error("Filtre önerileri yüklenirken hata:", error);
     }
-}
-
-// 6. YENİ ÜRÜN EKLEME / GÜNCELLEME VE MODAL YÖNETİMİ
+}
 window.urunModalAc = function() {
     const urunModal = document.getElementById('urunModal');
     const urunFormu = document.getElementById('urunFormu');
@@ -494,15 +471,11 @@ window.urunModalKapat = function() {
     if (urunModal) {
         urunModal.classList.remove('open');
     }
-};
-
-// 7. SAYFA YÜKLENDİĞİNDE TETİKLENEN DİNLEYİCİLER
+};
 document.addEventListener("DOMContentLoaded", () => {
     siparisleriYukle();
     urunleriYukle(); 
-    if (typeof indirimKutulariniYukle === 'function') indirimKutulariniYukle();
-    
-    // 🔎 Sipariş arama kutusu (yazmayı bıraktıktan 350 ms sonra arar)
+    if (typeof indirimKutulariniYukle === 'function') indirimKutulariniYukle();
     const siparisAraInput = document.getElementById('siparisAraInput');
     const siparisAramaTemizle = document.getElementById('siparisAramaTemizle');
     if (siparisAraInput) {
@@ -579,9 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
-
-// 8. KULLANICI LİSTELEME VE SİLME FONKSİYONLARI
+});
 window.kullanicilarYukle = async function() {
     const tabloGövde = document.getElementById('kullanicilarTabloGövde');
     if (!tabloGövde) return;
@@ -661,11 +632,7 @@ window.kullaniciSayfaDegistir = function(yon) {
         kullaniciMevcutSayfa--;
     }
     kullanicilarYukle();
-};
-
-// ==========================================
-// 9. SİTE AYARLARI VE HERO GÖRSELİ YÖNETİMİ
-// ==========================================
+};
 window.ayarlariGetir = async function() {
     try {
         const response = await fetch(`${API_URL}/ayarlar`);
@@ -792,11 +759,7 @@ if (telefonFormu) {
             btn.disabled = false;
         }
     });
-}
-
-// ==========================================
-// 10. İNDİRİM KUTULARI YÖNETİM FONKSİYONLARI (3'ER GRUP, MAKS. 12 KUTU)
-// ==========================================
+}
 const KAMPANYA_MAKS_KUTU = 12;
 const KAMPANYA_GRUP_BOYUTU = 3;
 let kampanyaKutulariHafizasi = []; // en son sunucudan gelen kutu_no -> kutu verisi
@@ -814,10 +777,7 @@ window.indirimKutulariniYukle = async function() {
         console.error("Kutular yüklenirken hata:", err);
         container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 30px;">Kampanyalar yüklenirken bir hata oluştu.</p>';
     }
-};
-
-// Dolu kutu_no'ların en büyüğüne göre kaç grubun ekranda görüneceğini belirler
-// (en az 1 grup, dolu son kutunun grubu + varsa 1 boş grup daha gösterilir)
+};
 function kampanyaGorunecekGrupSayisi() {
     const doluNolar = kampanyaKutulariHafizasi
         .filter(k => !!k.baslik)
@@ -827,8 +787,7 @@ function kampanyaGorunecekGrupSayisi() {
         ? Math.ceil(Math.max(...doluNolar) / KAMPANYA_GRUP_BOYUTU)
         : 0;
 
-    const toplamGrup = KAMPANYA_MAKS_KUTU / KAMPANYA_GRUP_BOYUTU;
-    // Dolu grupların hemen ardından bir sonraki boş grubu da göster (varsa)
+    const toplamGrup = KAMPANYA_MAKS_KUTU / KAMPANYA_GRUP_BOYUTU;
     return Math.min(enBuyukDoluGrup + (enBuyukDoluGrup < toplamGrup ? 1 : 0) || 1, toplamGrup);
 }
 
@@ -877,14 +836,10 @@ function kampanyaGrubuOlustur(grupNo) {
     }
 
     return grupWrapper;
-}
-
-// "Yeni Kampanya Grubu Ekle" butonunu, 12 sınırına göre aktif/pasif yapar
+}
 function kampanyaEkleButonuGuncelle() {
     const buton = document.querySelector('button[onclick="yeniKampanyaKutusuEkle()"]');
-    if (!buton) return;
-
-    // Dolu kutu sayısı 12'ye ulaştıysa butonu kapat
+    if (!buton) return;
     const doluSayisi = kampanyaKutulariHafizasi.filter(k => !!k.baslik).length;
     if (doluSayisi >= KAMPANYA_MAKS_KUTU) {
         buton.disabled = true;
@@ -897,9 +852,7 @@ function kampanyaEkleButonuGuncelle() {
         buton.style.cursor = 'pointer';
         buton.innerHTML = `<i class="fas fa-plus"></i> Yeni Kampanya Grubu Ekle (+3)`;
     }
-}
-
-// Butona basınca yeni bir 3'lü grup daha ekranda açılır (henüz kaydedilmemiş, boş kutular)
+}
 window.yeniKampanyaKutusuEkle = function() {
     const doluSayisi = kampanyaKutulariHafizasi.filter(k => !!k.baslik).length;
     if (doluSayisi >= KAMPANYA_MAKS_KUTU) {
@@ -911,9 +864,7 @@ window.yeniKampanyaKutusuEkle = function() {
     const yeniGrupNo = kampanyaGorunecekGrupSayisi();
     const hedefElement = document.getElementById(`kampanyaGrupIcerik-${yeniGrupNo}`);
     if (hedefElement) hedefElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-};
-
-// Bir grubun 3 kutusunu da veritabanından kaldırır (ürünleri SİLMEZ, sadece vitrin bağlantısını kaldırır)
+};
 window.kampanyaGrubunuKaldir = async function(grupNo) {
     const baslangicNo = (grupNo - 1) * KAMPANYA_GRUP_BOYUTU + 1;
     const bitisNo = grupNo * KAMPANYA_GRUP_BOYUTU;
@@ -997,8 +948,7 @@ window.kutuKaydet = async function(event, kutuNo) {
     event.preventDefault();
     const formData = new FormData();
 
-    formData.append('kutu_no', kutuNo);
-    // Kutuda zaten bir ürün varsa onun numarası gönderilir; böylece "Güncelle" yeni ürün oluşturmaz, mevcut ürünü günceller
+    formData.append('kutu_no', kutuNo);
     const mevcutUrunIdAlani = document.getElementById(`kutu-urun-id-${kutuNo}`);
     if (mevcutUrunIdAlani && mevcutUrunIdAlani.value) {
         formData.append('urun_id', mevcutUrunIdAlani.value);

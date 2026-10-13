@@ -13,37 +13,22 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { body, validationResult } = require('express-validator');
-
-// 🛡️ ZORUNLU AYAR KONTROLÜ: JWT_SECRET yoksa sunucu hiç açılmasın
+const { body, validationResult } = require('express-validator');
 if (!process.env.JWT_SECRET) {
     console.error('HATA: .env dosyasında JWT_SECRET tanımlı değil! Sunucu başlatılmadı.');
     process.exit(1);
 }
 if (process.env.JWT_SECRET.length < 32) {
     console.warn('UYARI: JWT_SECRET çok kısa. En az 32 karakterlik rastgele bir değer kullanmanız önerilir.');
-}
-
-// 🚀 SHARP PERFORMANS VE BELLEK OPTİMİZASYONU
+}
 sharp.concurrency(1);
-sharp.cache(false);
-
-// 1. Sunucu Uygulaması Ayarları
-const app = express();
-
-// 🛡️ REVERSE PROXY (Nginx, Cloudflare, cPanel) ARKASINDA IP DOĞRU ALINMASI İÇİN
-app.set('trust proxy', 1);
-
-
-// 🚀 TÜM HTTP YANITLARINI (JSON/TEXT) OTOMATİK SIKIŞTIRMA (GZIP)
-app.use(compression());
-
-// 🛡️ HELMET (HTTP BAŞLIK GÜVENLİĞİ & GİZLİLİK)
+sharp.cache(false);
+const app = express();
+app.set('trust proxy', 1);
+app.use(compression());
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false
-}));
-
-// CORS Ayarlarını Yapılandırma
+}));
 const corsAyarlari = {
     origin: [
         'https://irsadkitapevi.com.tr', 
@@ -60,10 +45,7 @@ const corsAyarlari = {
 };
 
 app.use(cors(corsAyarlari));
-app.use(express.json());
-
-// 🛡️ GENEL İSTEK SINIRI: Tek bir IP'den aşırı yoğun istek gelirse (bot / tarama) veritabanını korur.
-// Normal kullanım çok altındadır; ortak internet kullanan (mobil operatör vb.) ziyaretçileri de rahatlıkla karşılar.
+app.use(express.json());
 const genelLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 600,
@@ -71,57 +53,41 @@ const genelLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false
 });
-app.use('/api', genelLimiter);
-
-// 🛡️ SİPARİŞ SPAM KORUMASI (RATE LIMITER)
+app.use('/api', genelLimiter);
 const siparisLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 Dakika
     max: 5, // Aynı IP'den 1 dakikada en fazla 5 sipariş
     message: { hata: "Çok fazla sipariş denemesi yaptınız. Lütfen 1 dakika bekleyip tekrar deneyiniz." },
     standardHeaders: true,
     legacyHeaders: false
-});
-
-// 🛡️ GİRİŞ VE ŞİFRE SIFIRLAMA KORUMASI (BRUTE-FORCE RATE LIMITER)
+});
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 Dakika
     max: 30, // 15 dakikada aynı IP'den en fazla 30 deneme
     message: { hata: "Çok fazla giriş veya şifre sıfırlama denemesi yaptınız. Lütfen 15 dakika sonra tekrar deneyiniz." },
     standardHeaders: true,
     legacyHeaders: false
-});
-
-// 🛡️ YENİ ÜYELİK KORUMASI: Botların veritabanını sahte üyeliklerle doldurmasını engeller
+});
 const kayitLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 Saat
     max: 10, // Aynı IP'den 1 saatte en fazla 10 yeni üyelik
     message: { hata: "Bu bağlantıdan çok fazla üyelik oluşturuldu. Lütfen daha sonra tekrar deneyiniz." },
     standardHeaders: true,
     legacyHeaders: false
-});
-
-// 🛡️ ŞİFRE SIFIRLAMA KODU İSTEME / DOĞRULAMA KORUMASI (daha sıkı)
+});
 const sifirlamaLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 Dakika
     max: 10, // 15 dakikada aynı IP'den en fazla 10 işlem
     message: { hata: "Çok fazla şifre sıfırlama denemesi yaptınız. Lütfen 15 dakika sonra tekrar deneyiniz." },
     standardHeaders: true,
     legacyHeaders: false
-});
-
-// Fotoğrafların kaydedileceği klasör kontrolü
+});
 const uploadsKlasoru = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsKlasoru)){
     fs.mkdirSync(uploadsKlasoru, { recursive: true });
-}
-
-// Uploads klasörünü dışa açma
-// Dosya adları benzersiz olduğu için tarayıcıda uzun süre önbelleğe alınabilir
-app.use('/uploads', express.static(uploadsKlasoru, { maxAge: '30d', immutable: true }));
-// Public (Frontend) klasörünü dışa açma
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 🛡️ GÜVENLİ DOSYA YÜKLEME AYARLARI (MULTER KOTASI VE FİLTRESİ)
+}
+app.use('/uploads', express.static(uploadsKlasoru, { maxAge: '30d', immutable: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
@@ -135,9 +101,7 @@ const upload = multer({
             cb(new Error('Sadece resim dosyası (jpg, png, webp vb.) yükleyebilirsiniz!'), false);
         }
     }
-});
-
-// 2. MySQL Veritabanı Havuzu (Pool)
+});
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -146,14 +110,10 @@ const db = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-});
-
-// Büyük siparişlerde ürün listesi MySQL varsayılan sınırında (1024 karakter) sessizce kesilmesin
+});
 db.on('connection', (baglanti) => {
     baglanti.query("SET SESSION group_concat_max_len = 16384");
-});
-
-// 3. Veritabanı Bağlantı Kontrolü
+});
 db.getConnection((err, connection) => {
     if (err) {
         console.error('Veritabanına bağlanırken hata oluştu: ' + err.stack);
@@ -161,16 +121,8 @@ db.getConnection((err, connection) => {
     }
     console.log('MySQL Veritabanı Havuzuna (Pool) başarıyla bağlanıldı! Depo aktif.');
     connection.release();
-});
-
-// ====================================================================
-// 🧰 YARDIMCI FONKSİYONLAR
-// ====================================================================
-const dbp = db.promise();
-
-// ⚡ KISA SÜRELİ ÖNBELLEK: Herkesin gördüğü ve sık istenen veriler (vitrin, kategoriler, ayarlar...)
-// 60 saniye bellekte tutulur; her ziyaretçi için veritabanına gidilmez.
-// Admin panelinden yapılan her değişiklikte önbellek anında temizlenir, yani değişiklikler hemen görünür.
+});
+const dbp = db.promise();
 const ONBELLEK_SURESI_MS = 60 * 1000;
 const ONBELLEK_MAX_KAYIT = 300;
 const onbellek = new Map();
@@ -194,9 +146,7 @@ function onbellegeYaz(anahtar, veri) {
 
 function onbellekTemizle() {
     onbellek.clear();
-}
-
-// 🔧 Şifre sıfırlama için gereken sütunlar yoksa açılışta otomatik eklenir (bir kez çalışır, sonra hiçbir şey yapmaz)
+}
 (async () => {
     try {
         const [kolonlar] = await dbp.query("SHOW COLUMNS FROM kullanicilar LIKE 'sifirlama_kodu'");
@@ -208,16 +158,12 @@ function onbellekTemizle() {
         console.error("⚠️ Şifre sıfırlama sütunları eklenemedi:", e.message);
         console.error("   Lütfen MySQL Workbench'te elle çalıştırın: ALTER TABLE kullanicilar ADD COLUMN sifirlama_kodu VARCHAR(100) NULL, ADD COLUMN sifirlama_bitis DATETIME NULL, ADD COLUMN sifirlama_deneme TINYINT NOT NULL DEFAULT 0;");
     }
-})();
-
-// Sayfa ve limit değerlerini güvenli aralıkta tutar (negatif / aşırı büyük değerleri engeller)
+})();
 function sayfalamaAl(req, varsayilanLimit, maksimumLimit = 100) {
     const sayfa = Math.max(parseInt(req.query.sayfa) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || varsayilanLimit, 1), maksimumLimit);
     return { sayfa, limit };
-}
-
-// Fiyatı sayıya çevirir. Boşsa 0, geçersizse (eksi, harf vb.) null döner.
+}
 function fiyatiTemizle(deger) {
     if (deger === undefined || deger === null || String(deger).trim() === '') return 0;
     const sayi = Number(String(deger).replace(',', '.'));
@@ -225,9 +171,7 @@ function fiyatiTemizle(deger) {
     return Math.round(sayi * 100) / 100;
 }
 
-const buyukHarfTemizle = (deger) => String(deger || '').toLocaleUpperCase('tr-TR').trim();
-
-// Arama kelimelerinden özel karakterleri (+ - " ( ) ~ * vb.) temizler
+const buyukHarfTemizle = (deger) => String(deger || '').toLocaleUpperCase('tr-TR').trim();
 function aramaKelimeleriniHazirla(girdi) {
     return String(girdi || '')
         .replace(/[^\p{L}\p{N}\s]/gu, ' ')
@@ -249,9 +193,7 @@ function htmlKacis(metin) {
     return String(metin == null ? '' : metin)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// Yüklenen resmi küçültüp WebP olarak kaydeder
+}
 async function resmiKaydet(buffer, onek, genislik, kalite) {
     const dosyaAdi = benzersizDosyaAdi(onek);
     const filePath = path.join(uploadsKlasoru, dosyaAdi);
@@ -261,11 +203,7 @@ async function resmiKaydet(buffer, onek, genislik, kalite) {
         .webp({ quality: kalite })
         .toFile(filePath);
     return { filePath, resimYolu: '/uploads/' + dosyaAdi };
-}
-
-// ====================================================================
-// 🛡️ GÜVENLİK GÖREVLİSİ (MIDDLEWARE) - TÜM ROTALARDAN ÖNCE TANIMLANDI
-// ====================================================================
+}
 const tokenCozumle = (req) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
@@ -276,9 +214,7 @@ const tokenCozumle = (req) => {
     } catch (error) {
         return null;
     }
-};
-
-// Giriş yapmış herhangi bir kullanıcı (üye veya admin). Kullanıcının hâlâ var olduğunu veritabanından doğrular.
+};
 const girisKontrol = (req, res, next) => {
     const cozulmusToken = tokenCozumle(req);
     if (!cozulmusToken) {
@@ -296,9 +232,7 @@ const girisKontrol = (req, res, next) => {
         req.kullanici = sonuclar[0];
         next();
     });
-};
-
-// Sadece admin. Rol bilgisi token'dan değil, veritabanından okunur (rol değişirse hemen etkili olur).
+};
 const adminKontrol = (req, res, next) => {
     girisKontrol(req, res, () => {
         if (req.kullanici.rol !== 'admin') {
@@ -306,11 +240,7 @@ const adminKontrol = (req, res, next) => {
         }
         next();
     });
-};
-
-// ====================================================================
-// VİTRİN: ID'SİNE GÖRE TEK BİR ÜRÜNÜ GETİRME API'Sİ (SOFT DELETE FİLTRELİ)
-// ====================================================================
+};
 app.get('/api/urun-detay', (req, res) => {
     const urunId = req.query.id;
 
@@ -332,11 +262,7 @@ app.get('/api/urun-detay', (req, res) => {
 
         res.json(sonuclar[0]); 
     });
-});
-
-// ====================================================================
-// VİTRİN: SONSUZ KAYDIRMA (INFINITE SCROLL) İÇİN HAFİF API (SOFT DELETE FİLTRELİ + ÖNBELLEKLİ)
-// ====================================================================
+});
 app.get('/api/vitrin/urunler', (req, res) => {
     const { sayfa, limit } = sayfalamaAl(req, 12, 48);
     const kategori = String(req.query.kategori || '').slice(0, 100);
@@ -372,13 +298,7 @@ app.get('/api/vitrin/urunler', (req, res) => {
         onbellegeYaz(anahtar, sonuclar);
         res.json(sonuclar);
     });
-});
-
-// ====================================================================
-// VİTRİN: MÜŞTERİ SEPETİNİ SİPARİŞE DÖNÜŞTÜRME API'Sİ (TRANSACTION İLE)
-// - Giriş zorunlu, kullanıcı bilgisi token'dan alınır
-// - Fiyat, ürün adı ve sipariş kodu SUNUCUDA belirlenir (tarayıcıya güvenilmez)
-// ====================================================================
+});
 app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) => {
     const { sepet } = req.body || {};
 
@@ -387,9 +307,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
     }
     if (sepet.length > 50) {
         return res.status(400).json({ hata: "Sepette en fazla 50 çeşit ürün olabilir." });
-    }
-
-    // Her ürün için id ve adet kontrolü (adet: 1-99 arası tam sayı olmalı; eksi/ondalık/aşırı büyük değerler reddedilir)
+    }
     const adetler = new Map();
     for (const kalem of sepet) {
         const id = Number(kalem && kalem.id);
@@ -402,8 +320,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
 
     const urunIdleri = [...adetler.keys()];
     let connection;
-    try {
-        // Tek bir hesabın 24 saatte en fazla 20 sipariş vermesine izin verilir (yanlışlıkla/kötü niyetle şişmeyi önler)
+    try {
         const [gunlukSiparis] = await dbp.query(
             "SELECT COUNT(*) AS sayi FROM siparisler WHERE kullanici_id = ? AND tarih > DATE_SUB(NOW(), INTERVAL 1 DAY)",
             [req.kullanici.id]
@@ -413,9 +330,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
         }
 
         connection = await dbp.getConnection();
-        await connection.beginTransaction();
-
-        // Sadece satışta olan (silinmemiş) ürünler
+        await connection.beginTransaction();
         const [veritabaniUrunleri] = await connection.query(
             "SELECT id, fiyat, baslik FROM urunler WHERE id IN (?) AND silindi_mi = 0",
             [urunIdleri]
@@ -434,9 +349,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
             gercekToplamTutar += fiyat * adet;
             guvenliSepet.push({ id: urun.id, baslik: urun.baslik, adet, fiyat });
         }
-        gercekToplamTutar = Math.round(gercekToplamTutar * 100) / 100;
-
-        // Sipariş kodunu sunucu üretir; nadiren çakışırsa yeniden dener
+        gercekToplamTutar = Math.round(gercekToplamTutar * 100) / 100;
         let siparisKodu = null;
         let yeniSiparisId = null;
         for (let deneme = 0; deneme < 5 && !siparisKodu; deneme++) {
@@ -471,7 +384,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
     } catch (error) {
         console.error("Sipariş işlem hatası:", error);
         if (connection) {
-            try { await connection.rollback(); } catch (e) { /* yoksay */ }
+            try { await connection.rollback(); } catch (e) {  }
         }
         res.status(500).json({ hata: "Sipariş kaydedilemedi." });
     } finally {
@@ -479,11 +392,7 @@ app.post('/api/siparis-olustur', siparisLimiter, girisKontrol, async (req, res) 
             connection.release();
         }
     }
-});
-
-// ====================================================================
-// SİTE AYARLARINI GETİRME API'Sİ (HERKESE AÇIK - her sayfa açılışında istenir, bu yüzden önbellekli)
-// ====================================================================
+});
 app.get('/api/ayarlar', (req, res) => {
     const onbellekliVeri = onbellekten('ayarlar');
     if (onbellekliVeri) return res.json(onbellekliVeri);
@@ -497,17 +406,10 @@ app.get('/api/ayarlar', (req, res) => {
         onbellegeYaz('ayarlar', veri);
         res.json(veri);
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: SİTE AYARLARINI GÜNCELLEME (HERO RESMİ VE YAZI DESTEKLİ)
-// ====================================================================
+});
 app.post('/api/admin/ayarlar', adminKontrol, upload.single('hero_resim'), async (req, res) => {
-    try {
-        // req.body içerisinden yeni başlık ve alt metin değerlerini de alıyoruz
-        const { telefon1, telefon2, hero_baslik, hero_alt_metin } = req.body; 
-
-        // Telefon numaraları sadece rakam, +, boşluk, parantez ve tire içerebilir
+    try {
+        const { telefon1, telefon2, hero_baslik, hero_alt_metin } = req.body; 
         const telefonGecerli = (t) => t === undefined || t === '' || /^[0-9+\s()\-]{7,25}$/.test(String(t));
         if (!telefonGecerli(telefon1) || !telefonGecerli(telefon2)) {
             return res.status(400).json({ hata: "Telefon numarası geçersiz! Sadece rakam, +, boşluk, parantez ve tire kullanabilirsiniz." });
@@ -541,8 +443,7 @@ app.post('/api/admin/ayarlar', adminKontrol, upload.single('hero_resim'), async 
                 return res.status(500).json({ hata: "Veritabanı okuma hatası." });
             }
 
-            if (sonuclar.length === 0) {
-                // Eğer tabloda hiç ayar yoksa (İlk Ekleme)
+            if (sonuclar.length === 0) {
                 const insertSql = "INSERT INTO ayarlar (telefon1, telefon2, hero_resim, hero_baslik, hero_alt_metin) VALUES (?, ?, ?, ?, ?)";
                 db.query(insertSql, [telefon1 || '', telefon2 || '', newHeroResimPath, hero_baslik || '', hero_alt_metin || ''], (err2) => {
                     if (err2) {
@@ -552,8 +453,7 @@ app.post('/api/admin/ayarlar', adminKontrol, upload.single('hero_resim'), async 
                     onbellekTemizle();
                     res.json({ mesaj: "Site ayarları başarıyla kaydedildi!" });
                 });
-            } else {
-                // Eğer tabloda ayar varsa (Güncelleme)
+            } else {
                 const mevcutAyar = sonuclar[0];
                 const guncelHeroResim = newHeroResimPath || mevcutAyar.hero_resim;
 
@@ -588,21 +488,13 @@ app.post('/api/admin/ayarlar', adminKontrol, upload.single('hero_resim'), async 
         console.error("Endpoint genel hatası:", genelHata);
         res.status(500).json({ hata: "Sunucu içi beklenmeyen hata." });
     }
-});
-
-// ====================================================================
-// ADMIN PANELİ: FRONTEND İÇİN GÜVENLİK VE ROL DOĞRULAMA API'Sİ
-// ====================================================================
+});
 app.get('/api/admin/verify', adminKontrol, (req, res) => {
     if (req.kullanici && req.kullanici.rol === 'admin') {
         return res.status(200).json({ success: true, rol: 'admin' });
     }
     return res.status(403).json({ success: false, hata: "Admin yetkisi gerekli." });
-});
-
-// ====================================================================
-// ADMIN PANELİ: TÜM SİPARİŞLERİ LİSTELEME API'Sİ
-// ====================================================================
+});
 app.get('/api/admin/siparisler', adminKontrol, (req, res) => {
     const { sayfa, limit } = sayfalamaAl(req, 12, 100);
     const tur = req.query.tur; 
@@ -614,19 +506,14 @@ app.get('/api/admin/siparisler', adminKontrol, (req, res) => {
         kosullar.push("(s.durum != 'Tamamlandı' AND s.durum != 'İptal')");
     } else if (tur === 'gecmis') {
         kosullar.push("(s.durum = 'Tamamlandı' OR s.durum = 'İptal')");
-    }
-
-    // 🔎 Sipariş kodu, müşteri adı, e-posta veya telefona göre arama (kodun bir kısmı yazılsa da bulunur)
+    }
     const arama = String(req.query.arama || '').trim().slice(0, 60);
     if (arama) {
         const kacis = (metin) => metin.replace(/[\\%_]/g, '\\$&');
-        const like = `%${kacis(arama)}%`;
-        // Sipariş kodları her zaman BÜYÜK harflidir; veritabanı dil ayarı ne olursa olsun küçük harfle yazılan kod da bulunsun
+        const like = `%${kacis(arama)}%`;
         const likeKod = `%${kacis(arama.toLocaleUpperCase('en-US'))}%`;
         const sartlar = ["s.siparis_kodu LIKE ?", "k.isim LIKE ?", "k.eposta LIKE ?", "k.telefon LIKE ?"];
-        aramaParametreleri.push(likeKod, like, like, like);
-
-        // Telefon "0532 444 55 66" gibi boşluklu kayıtlıysa, boşluksuz yazılan numara da bulunsun
+        aramaParametreleri.push(likeKod, like, like, like);
         const sadeceRakam = arama.replace(/\D/g, '');
         if (sadeceRakam.length >= 3) {
             sartlar.push("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.telefon, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?");
@@ -645,9 +532,7 @@ app.get('/api/admin/siparisler', adminKontrol, (req, res) => {
         }
         
         const toplamSiparis = countSonuc[0].toplam;
-        const toplamSayfa = Math.ceil(toplamSiparis / limit) || 1;
-
-        // Önce sayfadaki siparişler seçilir, ürün listesi sadece o satırlar için hesaplanır (tüm tabloyu gruplamaz)
+        const toplamSayfa = Math.ceil(toplamSiparis / limit) || 1;
         const sqlSorgusu = `
             SELECT
                 s.id, s.siparis_kodu, s.toplam_tutar, s.durum, s.tarih,
@@ -675,11 +560,7 @@ app.get('/api/admin/siparisler', adminKontrol, (req, res) => {
             }); 
         });
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: SİPARİŞ DURUMUNU 'TAMAMLANDI' YAPMA API'Sİ
-// ====================================================================
+});
 app.post('/api/admin/siparis-tamamla', adminKontrol, (req, res) => {
     const siparisId = parseInt(req.body.id);
 
@@ -696,11 +577,7 @@ app.post('/api/admin/siparis-tamamla', adminKontrol, (req, res) => {
         }
         res.json({ mesaj: "Sipariş başarıyla tamamlandı!" });
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: ÜRÜN LİSTELEME API'Sİ (SOFT DELETE FİLTRELİ)
-// ====================================================================
+});
 app.get('/api/admin/urunler', adminKontrol, (req, res) => {
     const { sayfa, limit } = sayfalamaAl(req, 20, 100);
     const arama = req.query.arama || "";
@@ -749,19 +626,13 @@ app.get('/api/admin/urunler', adminKontrol, (req, res) => {
             });
         });
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: YENİ ÜRÜN EKLEME API'Sİ
-// ====================================================================
+});
 app.post('/api/admin/urun-ekle', adminKontrol, upload.single('resim'), async (req, res) => {
     const baslik = buyukHarfTemizle(req.body.baslik);
     const kategori = buyukHarfTemizle(req.body.kategori);
     const tip = buyukHarfTemizle(req.body.tip);
     const aciklama = String(req.body.aciklama || '');
-    const fiyat = fiyatiTemizle(req.body.fiyat);
-
-    // Önce her şeyi doğrula, sonra resmi işle (hatalı istekte diskte sahipsiz dosya kalmasın)
+    const fiyat = fiyatiTemizle(req.body.fiyat);
     if (!baslik || !kategori || !req.file) {
         return res.status(400).json({ hata: "Lütfen zorunlu alanları (Başlık, Kategori, Fotoğraf) doldurun!" });
     }
@@ -787,11 +658,7 @@ app.post('/api/admin/urun-ekle', adminKontrol, upload.single('resim'), async (re
         onbellekTemizle();
         res.json({ mesaj: "Ürün başarıyla dükkana eklendi!", yeniUrunId: sonuc.insertId });
     });
-});
-
-// ====================================================================
-// FİLTRELER: MEVCUT BENZERSİZ KATEGORİ VE KOLEKSİYONLAR API'Sİ (ÖNBELLEKLİ)
-// ====================================================================
+});
 app.get('/api/admin/benzersiz-filtreler', (req, res) => {
     const kategori = String(req.query.kategori || '').trim().slice(0, 100);
 
@@ -836,11 +703,7 @@ app.get('/api/admin/benzersiz-filtreler', (req, res) => {
             res.json(veri);
         });
     });
-});
-
-// ===================================================================
-// VİTRİN: TEK BİR ÜRÜNÜN DETAYINI ID'SİNE GÖRE GETİRME API'Sİ (ÖNBELLEKLİ)
-// ===================================================================
+});
 app.get('/api/urunler/:id', (req, res) => {
     const urunId = parseInt(req.params.id);
     if (!urunId || urunId < 1) {
@@ -862,12 +725,7 @@ app.get('/api/urunler/:id', (req, res) => {
         onbellegeYaz(anahtar, sonuc[0]);
         res.json(sonuc[0]);
     });
-});
-
-// ===================================================================
-// VİTRİN: ARAMA ÇUBUĞU İÇİN CANLI ÜRÜN ARAMA API'Sİ
-// (özel karakterler temizlenir; kısa kelimeler için LIKE yedeği vardır)
-// ===================================================================
+});
 app.get('/api/urun-ara', (req, res) => {
     const kelimeler = aramaKelimeleriniHazirla(req.query.q);
 
@@ -891,11 +749,7 @@ app.get('/api/urun-ara', (req, res) => {
         onbellegeYaz(anahtar, sonuclar);
         res.json(sonuclar);
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: ÜRÜNÜ MANTIKSAL SİLME (SOFT DELETE) API'Sİ
-// ====================================================================
+});
 app.delete('/api/admin/urunler/:id', adminKontrol, (req, res) => {
     const urunId = req.params.id;
 
@@ -909,11 +763,7 @@ app.delete('/api/admin/urunler/:id', adminKontrol, (req, res) => {
         onbellekTemizle();
         res.json({ mesaj: "Ürün başarıyla kaldırıldı." });
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: ÜRÜN GÜNCELLEME (ESKİ RESMİ DİSKTEN SİLEREK)
-// ====================================================================
+});
 app.put('/api/admin/urunler/:id', adminKontrol, upload.single('resim'), async (req, res) => {
     const urunId = parseInt(req.params.id);
     if (!urunId || urunId < 1) {
@@ -964,11 +814,7 @@ app.put('/api/admin/urunler/:id', adminKontrol, upload.single('resim'), async (r
         if (yeniResim) dosyayiSil(yeniResim.filePath);
         res.status(500).json({ hata: "Ürün güncellenirken hata oluştu." });
     }
-});
-
-// ====================================================================
-// ADMIN PANELİ: GEÇMİŞ SİPARİŞİ KALICI SİLME API'Sİ
-// ====================================================================
+});
 app.delete('/api/admin/siparisler/:id', adminKontrol, (req, res) => {
     const siparisId = req.params.id;
 
@@ -991,11 +837,7 @@ app.delete('/api/admin/siparisler/:id', adminKontrol, (req, res) => {
             res.json({ mesaj: "Sipariş veri tabanından kalıcı olarak temizlendi!" });
         });
     });
-});
-
-// ====================================================================
-// KULLANICI: YENİ ÜYE KAYIT API'Sİ (RATE LIMITER KORUMALI)
-// ====================================================================
+});
 app.post('/api/register', kayitLimiter, [
     body('eposta').trim().isEmail().withMessage('Geçerli bir e-posta adresi girmelisiniz.')
         .isLength({ max: 100 }).withMessage('E-posta adresi çok uzun.'),
@@ -1043,11 +885,7 @@ app.post('/api/register', kayitLimiter, [
             res.status(500).json({ hata: "Güvenlik işlemi sırasında hata oluştu." });
         }
     });
-});
-
-// ====================================================================
-// KULLANICI: GİRİŞ YAPMA API'Sİ
-// ====================================================================
+});
 app.post('/api/login', authLimiter, [
     body('eposta').isEmail().withMessage('Lütfen geçerli bir e-posta giriniz.'),
     body('sifre').notEmpty().withMessage('Şifre alanı boş bırakılamaz.')
@@ -1097,11 +935,7 @@ app.post('/api/login', authLimiter, [
             res.status(500).json({ hata: "Sistemsel bir hata oluştu." });
         }
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: ÜYELERİ LİSTELEME API'Sİ
-// ====================================================================
+});
 app.get('/api/admin/kullanicilar', adminKontrol, (req, res) => {
     const { sayfa, limit } = sayfalamaAl(req, 20, 100);
     const offset = (sayfa - 1) * limit;
@@ -1131,11 +965,7 @@ app.get('/api/admin/kullanicilar', adminKontrol, (req, res) => {
             });
         });
     });
-});
-
-// ====================================================================
-// ADMIN PANELİ: ÜYE MANTIKSAL SİLME (SOFT DELETE) API'Sİ
-// ====================================================================
+});
 app.delete('/api/admin/kullanicilar/:id', adminKontrol, (req, res) => {
     const silinecekId = req.params.id;
 
@@ -1148,12 +978,7 @@ app.delete('/api/admin/kullanicilar/:id', adminKontrol, (req, res) => {
         }
         res.json({ success: true, mesaj: "Kullanıcı kaydı başarıyla silindi." });
     });
-});
-
-// ====================================================================
-// KULLANICI: ŞİFRE SIFIRLAMA - ADIM 1: E-POSTAYA 6 HANELİ DOĞRULAMA KODU GÖNDERME
-// Şifre bu aşamada DEĞİŞMEZ; ancak e-postadaki kod doğrulanınca değişir.
-// ====================================================================
+});
 app.post('/api/sifre-sifirla', sifirlamaLimiter, [
     body('eposta').trim().isEmail().withMessage('Lütfen geçerli bir e-posta adresi girin.')
 ], (req, res) => {
@@ -1163,8 +988,7 @@ app.post('/api/sifre-sifirla', sifirlamaLimiter, [
         return res.status(400).json({ hata: errors.array()[0].msg });
     }
 
-    const { eposta } = req.body;
-    // Hesap var olsa da olmasa da aynı cevap verilir (e-posta adreslerinin keşfedilmesini önler)
+    const { eposta } = req.body;
     const genelCevap = { success: true, mesaj: "Eğer bu e-posta adresiyle kayıtlı bir hesap varsa, doğrulama kodu gönderilmiştir." };
 
     const kontrolSql = `
@@ -1185,9 +1009,7 @@ app.post('/api/sifre-sifirla', sifirlamaLimiter, [
             return res.json(genelCevap);
         }
 
-        const kullanici = sonuclar[0];
-
-        // Son 1 dakika içinde kod gönderildiyse tekrar mail göndermeyiz (mail bombardımanını önler)
+        const kullanici = sonuclar[0];
         if (kullanici.cok_yeni) {
             return res.json(genelCevap);
         }
@@ -1235,12 +1057,7 @@ app.post('/api/sifre-sifirla', sifirlamaLimiter, [
             return res.status(500).json({ hata: "Güvenlik işlemi sırasında bir hata oluştu." });
         }
     });
-});
-
-// ====================================================================
-// KULLANICI: ŞİFRE SIFIRLAMA - ADIM 2: KODU DOĞRULAYIP YENİ ŞİFREYİ KAYDETME
-// (Kod 15 dk geçerli, en fazla 5 hatalı deneme hakkı vardır)
-// ====================================================================
+});
 app.post('/api/sifre-guncelle', sifirlamaLimiter, [
     body('eposta').trim().isEmail().withMessage('Geçerli bir e-posta adresi giriniz.'),
     body('geciciSifre').trim().matches(/^\d{6}$/).withMessage('Doğrulama kodu 6 haneli bir sayıdır.'),
@@ -1294,11 +1111,7 @@ app.post('/api/sifre-guncelle', sifirlamaLimiter, [
             res.status(500).json({ hata: "Sistemsel bir hata oluştu." });
         }
     });
-});
-
-// ====================================================================
-// KULLANICI: KENDİ GEÇMİŞ SİPARİŞLERİ
-// ====================================================================
+});
 app.get('/api/kullanici/siparisler', girisKontrol, (req, res) => {
     const sql = `
         SELECT s.id, s.siparis_kodu, s.toplam_tutar, s.durum, s.tarih,
@@ -1317,11 +1130,7 @@ app.get('/api/kullanici/siparisler', girisKontrol, (req, res) => {
         }
         res.json(sonuclar);
     });
-});
-
-// ====================================================================
-// VİTRİN: İLGİLİ / ÖNERİLEN ÜRÜNLERİ GETİRME API'Sİ (ÖNBELLEKLİ)
-// ====================================================================
+});
 app.get('/api/ilgili-urunler', (req, res) => {
     const kategori = String(req.query.kategori || '').slice(0, 100);
     const mevcutId = parseInt(req.query.mevcutId) || 0;
@@ -1350,13 +1159,7 @@ app.get('/api/ilgili-urunler', (req, res) => {
         onbellegeYaz(anahtar, sonuclar);
         res.json(sonuclar);
     });
-});
-
-// ====================================================================
-// FIRSAT ÜRÜNLERİ VE İNDİRİM KUTULARI API'LERİ
-// ====================================================================
-
-// 1. Vitrin için Fırsat Ürünlerini Çekme (Limit Sınırı Kaldırıldı)
+});
 app.get('/api/firsat-urunleri', (req, res) => {
     const onbellekliVeri = onbellekten('firsat');
     if (onbellekliVeri) return res.json(onbellekliVeri);
@@ -1383,9 +1186,7 @@ app.get('/api/firsat-urunleri', (req, res) => {
         onbellegeYaz('firsat', sonuclar);
         res.json(sonuclar);
     });
-});
-
-// 2. Kutuları Ve Bağlı Ürün Bilgilerini Getir (Admin Paneli İçin)
+});
 app.get('/api/indirim-kutulari', (req, res) => {
     const sql = `
         SELECT k.kutu_no, k.urun_id, u.baslik, u.kategori, u.tip, u.fiyat, u.resim, u.aciklama
@@ -1400,19 +1201,13 @@ app.get('/api/indirim-kutulari', (req, res) => {
         }
         res.json(sonuclar);
     });
-});
-
-// 3. Kampanya kutusunu kaydet (Admin)
-//    - urun_id varsa: O ÜRÜN GÜNCELLENİR (yeni ürün oluşturulmaz) ve kutuya bağlanır
-//    - urun_id yoksa: Yeni ürün oluşturulur ve kutuya bağlanır
+});
 app.post('/api/admin/indirim-kutulari/kaydet', adminKontrol, upload.single('resim'), async (req, res) => {
     const body = req.body || {};
 
     if (!body.kutu_no) {
         return res.status(400).json({ hata: "Kutu numarası zorunludur!" });
-    }
-
-    // 🛡️ KAMPANYA KUTUSU ÜST SINIRI (Vitrin tasarımı 3'ün katı ve en fazla 12 kutu ile uyumlu çalışır)
+    }
     const kutuNo = parseInt(body.kutu_no);
     if (isNaN(kutuNo) || kutuNo < 1 || kutuNo > 12) {
         return res.status(400).json({ hata: "Kampanya kutusu numarası 1 ile 12 arasında olmalıdır!" });
@@ -1432,9 +1227,7 @@ app.post('/api/admin/indirim-kutulari/kaydet', adminKontrol, upload.single('resi
         INSERT INTO indirim_kutulari (kutu_no, urun_id)
         VALUES (?, ?)
         ON DUPLICATE KEY UPDATE urun_id = VALUES(urun_id)
-    `;
-
-    // Sadece var olan bir ürünü kutuya bağlama (başlık gönderilmemişse)
+    `;
     if (mevcutUrunId > 0 && !baslik) {
         try {
             const [urun] = await dbp.query("SELECT id FROM urunler WHERE id = ? AND silindi_mi = 0", [mevcutUrunId]);
@@ -1460,9 +1253,7 @@ app.post('/api/admin/indirim-kutulari/kaydet', adminKontrol, upload.single('resi
     try {
         if (req.file) {
             yeniResim = await resmiKaydet(req.file.buffer, 'urun', 800, 80);
-        }
-
-        // --- MEVCUT ÜRÜNÜ GÜNCELLE ---
+        }
         if (mevcutUrunId > 0) {
             const [mevcut] = await dbp.query("SELECT resim FROM urunler WHERE id = ? AND silindi_mi = 0", [mevcutUrunId]);
             if (mevcut.length === 0) {
@@ -1488,9 +1279,7 @@ app.post('/api/admin/indirim-kutulari/kaydet', adminKontrol, upload.single('resi
             await dbp.query(kutuSql, [kutuNo, mevcutUrunId]);
             onbellekTemizle();
             return res.json({ mesaj: `${kutuNo}. kutudaki ürün başarıyla güncellendi!`, urunId: mevcutUrunId });
-        }
-
-        // --- YENİ ÜRÜN OLUŞTUR VE KUTUYA BAĞLA ---
+        }
         const [urunSonuc] = await dbp.query(
             "INSERT INTO urunler (baslik, kategori, tip, fiyat, resim, aciklama) VALUES (?, ?, ?, ?, ?, ?)",
             [baslik, kategori, tip, fiyat, yeniResim.resimYolu, '']
@@ -1508,9 +1297,7 @@ app.post('/api/admin/indirim-kutulari/kaydet', adminKontrol, upload.single('resi
         if (yeniResim) dosyayiSil(yeniResim.filePath);
         res.status(500).json({ hata: "Kampanya kutusu kaydedilemedi." });
     }
-});
-
-// 4. Kampanya Kutusunu Kaldır (Admin) - Sadece kutu bağlantısını siler, ürünü SİLMEZ
+});
 app.delete('/api/admin/indirim-kutulari/:kutu_no', adminKontrol, (req, res) => {
     const kutuNo = parseInt(req.params.kutu_no);
 
@@ -1527,10 +1314,7 @@ app.delete('/api/admin/indirim-kutulari/:kutu_no', adminKontrol, (req, res) => {
         onbellekTemizle();
         res.json({ mesaj: `${kutuNo}. kampanya kutusu kaldırıldı.` });
     });
-});
-
-// 🛡️ GENEL HATA YAKALAYICI (TÜM BEKLENMEYEN HATALAR İÇİN)
-// İç hata detayları kullanıcıya gösterilmez, sadece sunucu loguna yazılır.
+});
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         const mesaj = err.code === 'LIMIT_FILE_SIZE'
@@ -1546,9 +1330,7 @@ app.use((err, req, res, next) => {
     }
     console.error("Yakalanamayan Sunucu Hatası:", err);
     res.status(500).json({ hata: "Sunucuda beklenmeyen bir hata oluştu." });
-});
-
-// Sunucuyu Çalıştırma
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Tezgahtar (Sunucu) hazır! http://localhost:${PORT} adresinden istekleri bekliyor...`);

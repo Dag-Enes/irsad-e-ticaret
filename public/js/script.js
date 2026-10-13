@@ -7,16 +7,13 @@ const API_URL = isLocal ? 'http://localhost:5000/api' : '/api';
 const BACKEND_URL = isLocal ? 'http://localhost:5000' : '';
 
 window.sistemTelefonu = "905056592723";   // sipariş (WhatsApp)
-window.iletisimTelefonu = "905301445190"; // iletişim (footer)
-
-// 🛡️ GÜVENLİK: Sunucudan gelen metinleri HTML içine basmadan önce temizler (XSS koruması)
+window.iletisimTelefonu = "905301445190"; // iletişim (footer)
 function htmlTemizle(deger) {
     if (deger === null || deger === undefined) return '';
     return String(deger)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-
 
 function jsTirnakTemizle(metin) {
     return String(metin == null ? '' : metin)
@@ -29,9 +26,7 @@ function whatsappNumarasiHazirla(telefon) {
     if (n.startsWith('0')) n = '9' + n;        // 0530... -> 90530...
     else if (n.length === 10) n = '90' + n;    // 530...  -> 90530...
     return n;
-}
-
-// 905301445190 -> +90 (530) 144 51 90
+}
 function telefonuGoruntule(numara) {
     const n = String(numara || '');
     if (/^90\d{10}$/.test(n)) return `+90 (${n.slice(2, 5)}) ${n.slice(5, 8)} ${n.slice(8, 10)} ${n.slice(10, 12)}`;
@@ -43,9 +38,7 @@ function iletisimTelefonunuGuncelle() {
     const yazi = document.getElementById('footer-tel-text');
     if (link) link.href = `tel:+${window.iletisimTelefonu}`;
     if (yazi) yazi.innerText = telefonuGoruntule(window.iletisimTelefonu);
-}
-
-// ZAMANLAMA YARDIMCILARI
+}
 function debounce(func, delay) {
     let timeoutId;
     return function (...args) {
@@ -68,22 +61,18 @@ async function siteAyarlariniYukle() {
     try {
         const response = await fetch(`${API_URL}/ayarlar`);
         if (response.ok) {
-            const ayarlar = await response.json();
-
-            // 0. Telefon numaraları (admin panelinden): 1. numara = sipariş/WhatsApp, 2. numara = iletişim (boşsa 1. numara)
+            const ayarlar = await response.json();
             const siparisNo = whatsappNumarasiHazirla(ayarlar.telefon1 || ayarlar.telefon);
             if (siparisNo.length >= 11) window.sistemTelefonu = siparisNo;
             const iletisimNo = whatsappNumarasiHazirla(ayarlar.telefon2 || ayarlar.telefon1 || ayarlar.telefon);
             if (iletisimNo.length >= 11) window.iletisimTelefonu = iletisimNo;
             iletisimTelefonunuGuncelle();
 
-            
             if (ayarlar.hero_resim) {
                 const heroSection = document.getElementById('heroSection');
                 if (heroSection) {
                     let resimYolu = ayarlar.hero_resim;
-                    if (!resimYolu.startsWith('http')) {
-                        // BACKEND_URL kullanıyorsanız resim yolunu tam URL'ye çevirin
+                    if (!resimYolu.startsWith('http')) {
                         resimYolu = `${BACKEND_URL}${resimYolu.startsWith('/') ? '' : '/'}${resimYolu}`;
                     }
                     const tazeResimYolu = `${resimYolu}?t=${new Date().getTime()}`;
@@ -91,15 +80,11 @@ async function siteAyarlariniYukle() {
                     heroSection.style.backgroundSize = 'cover';
                     heroSection.style.backgroundPosition = 'center';
                 }
-            }
-
-            // 2. Başlık Yazısını Güncelleme
+            }
             if (ayarlar.hero_baslik) {
                 const heroTitle = document.getElementById('heroTitle');
                 if (heroTitle) heroTitle.innerText = ayarlar.hero_baslik;
-            }
-
-            // 3. Alt Açıklama Metnini Güncelleme
+            }
             if (ayarlar.hero_alt_metin) {
                 const heroDesc = document.getElementById('heroDesc');
                 if (heroDesc) heroDesc.innerText = ayarlar.hero_alt_metin;
@@ -108,9 +93,7 @@ async function siteAyarlariniYukle() {
     } catch (error) {
         console.error("Site ayarları yüklenemedi:", error);
     }
-}
-
-// 1. GENEL ARAYÜZ VE ARAMA MOTORU
+}
 const searchInput = document.getElementById('search-input');
 const searchSuggestions = document.getElementById('searchSuggestions');
 
@@ -161,9 +144,7 @@ if (searchInput && searchSuggestions) {
             searchSuggestions.style.display = 'block';
         }
     });
-}
-
-// 2. VİTRİN MOTORU
+}
 let aktifKategori = '', aktifTip = '';
 let vitrinMevcutSayfa = 1, vitrinYukleniyor = false, vitrinUrunlerBitti = false;
 
@@ -297,9 +278,7 @@ window.tipSec = function(tipAd, btnElement) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
     urunleriYukle(false);
-};
-
-// 3. SEPET MOTORU
+};
 let sepet = JSON.parse(localStorage.getItem('irsad_sepet')) || [];
 
 function sepetSayisiniGuncelle() {
@@ -381,15 +360,12 @@ function sepetiEkranaBas() {
     });
     liste.innerHTML = htmlBuffer;
     toplamAlan.innerText = `${toplamTutar.toFixed(2)} TL`;
-}
-
-// 4. SEPET.HTML SAYFA MOTORU
-// ✅ Sipariş verildikten sonra müşteri WhatsApp'tan sepete döndüğünde boş sepet yerine "Siparişiniz alındı" ekranı görür
+}
 function sonSiparisiOku() {
     try {
         const kayit = JSON.parse(sessionStorage.getItem('irsad_son_siparis') || 'null');
         if (kayit && kayit.kod && (Date.now() - kayit.zaman) < 3 * 60 * 60 * 1000) return kayit;
-    } catch (e) { /* yoksay */ }
+    } catch (e) {  }
     return null;
 }
 
@@ -453,9 +429,7 @@ function sepetSayfasiniYukle() {
     cartItemsList.innerHTML = htmlBuffer;
     if (cartSubTotal) cartSubTotal.innerText = `${toplam.toFixed(2)} TL`;
     if (cartTotal) cartTotal.innerText = `${toplam.toFixed(2)} TL`;
-}
-
-// 5. URUN-DETAY.HTML SAYFA MOTORU
+}
 async function tekUrunDetayiniYukle() {
     const urlParams = new URLSearchParams(window.location.search);
     const urunId = urlParams.get('id');
@@ -554,9 +528,7 @@ async function ilgiliUrunleriYukle(kategoriAd, mevcutUrunId) {
         console.error("İlgili ürünler çekilemedi:", err);
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Öneriler şu an yüklenemiyor.</p>';
     }
-}
-
-// 6. FİRSAT ÜRÜNLERİ MOTORU
+}
 async function firsatUrunleriniYukle() {
     const container = document.getElementById('promoGridContainer');
     if (!container) return;
@@ -572,9 +544,7 @@ async function firsatUrunleriniYukle() {
             return;
         }
 
-        let htmlContent = '';
-        
-        // .slice(0, 3) kısıtlaması kaldırıldı, gelen tüm kampanyalı ürünler döngüye girer
+        let htmlContent = '';
         urunler.forEach((urun) => {
             const resimSrc = urun.resim.startsWith('http') ? urun.resim : `${BACKEND_URL}${urun.resim}`;
             const rozet = urun.etiket || 'Özel İndirim';
@@ -600,9 +570,7 @@ async function firsatUrunleriniYukle() {
         console.error("Fırsat ürünleri yüklenirken hata:", error);
         container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: #dc3545; padding: 20px;">Fırsat ürünleri şu an yüklenemedi.</p>';
     }
-}
-
-// 7. TETİKLEYİCİLER VE WHATSAPP ENTEGRASYONU
+}
 window.addEventListener('pageshow', function(event) {
     sepetSayisiniGuncelle(); sepetiEkranaBas();
     if (window.location.pathname.includes('sepet.html')) sepetSayfasiniYukle();
@@ -664,9 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { rootMargin: '300px 0px' });
         observer.observe(sentinel);
     }
-});
-
-// 8. KULLANICI GİRİŞ/ÇIKIŞ VE PROFİL KONTROLÜ
+});
 function authDurumunuKontrolEt() {
     const rol = localStorage.getItem('irsad_kullanici_rol');
     const authBtn = document.getElementById('authBtn');
@@ -801,10 +767,7 @@ window.cikisYap = function() {
     localStorage.removeItem('irsad_kullanici_rol'); localStorage.removeItem('irsad_token');
     localStorage.removeItem('irsad_kullanici_bilgi'); localStorage.removeItem('irsad_sepet');
     profilModalKapat(); window.location.href = 'index.html';
-};
-
-
-// 10. YUKARI ÇIK BUTONU İŞLEMLERİ
+};
 const scrollTopBtn = document.getElementById("scrollTopBtn");
 if (scrollTopBtn) {
     window.addEventListener("scroll", throttle(() => {
@@ -830,17 +793,13 @@ async function whatsappSiparisGonder(sepet, whatsappTelefonNo = window.sistemTel
         return;
     }
 
-    siparisGonderiliyor = true;
-
-    // 📱 Safari ve mobil tarayıcılar, sunucu cevabı BEKLENDİKTEN SONRA açılan pencereleri engelleyebilir.
-    // Bu yüzden pencereyi tıklama anında açıyor, adresini sipariş kaydedilince WhatsApp'a yönlendiriyoruz.
-    // Mobilde (iPhone/Android) yeni sekme yerine aynı sekmede WhatsApp'a gidilir; dönünce "Siparişiniz alındı" ekranı görünür.
+    siparisGonderiliyor = true;
     const mobilCihaz = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     let waPencere = null;
     if (!mobilCihaz) {
         try { waPencere = window.open('', '_blank'); } catch (e) { waPencere = null; }
     }
-    const pencereyiKapat = () => { try { if (waPencere && !waPencere.closed) waPencere.close(); } catch (e) { /* yoksay */ } };
+    const pencereyiKapat = () => { try { if (waPencere && !waPencere.closed) waPencere.close(); } catch (e) {  } };
 
     let musteriIsmi = "Misafir Müşteri";
     try {
@@ -848,8 +807,7 @@ async function whatsappSiparisGonder(sepet, whatsappTelefonNo = window.sistemTel
         musteriIsmi = kayitliKullanici.isim || musteriIsmi;
     } catch (e) { console.error("LocalStorage kullanıcı verisi okunamadı:", e); }
 
-    try {
-        // Fiyat, ürün adı ve sipariş kodunu SUNUCU belirler; tarayıcı sadece ürün no ve adet gönderir
+    try {
         const response = await fetch(`${API_URL}/siparis-olustur`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -881,12 +839,10 @@ async function whatsappSiparisGonder(sepet, whatsappTelefonNo = window.sistemTel
         });
 
         const waMesaj = `🛒 *YENİ SİPARİŞ (İrşad Hediyelik)*\n\n📌 *Sipariş Kodu:* ${sonuc.siparisKodu}\n👤 *Müşteri:* ${musteriIsmi}\n\n📦 *Ürünler:*\n${urunDetaylari}\n💰 *Toplam Tutar:* ${sonuc.toplamTutar} TL\n\nSiparişimi onaylamak ve adres/ödeme detaylarını iletmek istiyorum.`;
-        const waUrl = `https://api.whatsapp.com/send?phone=${whatsappNumarasiHazirla(whatsappTelefonNo)}&text=${encodeURIComponent(waMesaj)}`;
-
-        // Sipariş kaydedildi: sepeti temizle ve "Siparişiniz alındı" bilgisini sakla (WhatsApp'tan dönüşte gösterilir)
+        const waUrl = `https://api.whatsapp.com/send?phone=${whatsappNumarasiHazirla(whatsappTelefonNo)}&text=${encodeURIComponent(waMesaj)}`;
         try {
             sessionStorage.setItem('irsad_son_siparis', JSON.stringify({ kod: sonuc.siparisKodu, waUrl, zaman: Date.now() }));
-        } catch (e) { /* yoksay */ }
+        } catch (e) {  }
         localStorage.removeItem('irsad_sepet');
         sepetSayisiniGuncelle(); sepetiEkranaBas();
         if (window.location.pathname.includes('sepet.html')) sepetSayfasiniYukle();
@@ -894,9 +850,7 @@ async function whatsappSiparisGonder(sepet, whatsappTelefonNo = window.sistemTel
 
         if (urunler.length < sepet.length) {
             alert("Bazı ürünler artık satışta olmadığı için siparişe eklenmedi.");
-        }
-
-        // WhatsApp'a git (pencere engellendiyse aynı sekmede aç)
+        }
         if (waPencere && !waPencere.closed) waPencere.location.href = waUrl;
         else window.location.href = waUrl;
     } catch (error) {

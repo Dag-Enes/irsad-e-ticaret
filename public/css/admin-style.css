@@ -1,6 +1,4 @@
-/* ============================================================
-   ADMİN PANELİ - TEMEL VE TEMA DEĞİŞKENLERİ
-   ============================================================ */
+
 
 :root {
     --primary-color: #1a1a1a;
@@ -26,7 +24,6 @@ body {
     color: var(--text-main);
 }
 
-/* --- YARDIMCI VE GENEL CSS SINIFLARI --- */
 .text-center { text-align: center !important; }
 .text-gold { color: var(--gold) !important; }
 .mb-15 { margin-bottom: 15px !important; }
@@ -49,13 +46,11 @@ body {
 .sub-section-title.active-title { color: var(--gold); }
 .sub-section-title.muted-title { color: var(--text-muted); }
 
-/* --- LAYOUT DÜZENİ --- */
 .admin-container {
     display: flex;
     min-height: 100vh;
 }
 
-/* SOL MENÜ (SIDEBAR) */
 .sidebar {
     width: var(--sidebar-width);
     background-color: var(--primary-color);
@@ -138,7 +133,6 @@ body {
     border: 1px dashed #444;
 }
 
-/* SAĞ İÇERİK ALANI */
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
@@ -177,7 +171,6 @@ body {
     font-size: 14px;
 }
 
-/* KART DÜZENİ VE FORMLAR */
 .admin-card {
     background: var(--secondary-color);
     border: 1px solid rgba(197, 160, 89, 0.3);
@@ -256,7 +249,6 @@ textarea:focus {
     border-color: var(--gold);
 }
 
-/* BUTONLAR */
 .btn-primary {
     background-color: var(--gold);
     color: #111;
@@ -315,16 +307,11 @@ textarea:focus {
     margin-left: 5px;
 }
 
-/* SAYFALAMA HİZALAMA */
 .pagination-right-wrapper {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
 }
-
-/* ============================================================
-   ÜRÜN YÖNETİMİ ÖZEL DÜZENİ
-   ============================================================ */
 
 .products-top-bar {
     display: flex;
@@ -404,10 +391,6 @@ textarea:focus {
     box-shadow: 0 0 8px rgba(197, 160, 89, 0.2);
 }
 
-/* ============================================================
-   TABLO DÜZENİ VE HİZALAMALAR
-   ============================================================ */
-
 .table-container {
     width: 100%;
     overflow-x: auto;
@@ -463,9 +446,6 @@ textarea:focus {
     transform: scale(1.1);
 }
 
-/* SÜTUN GENİŞLİKLERİ VE HİZALAMALAR */
-
-/* Aktif Siparişler Tablosu (6 Sütun) */
 #orders-section table:first-of-type th:nth-child(1),
 #orders-section table:first-of-type td:nth-child(1) { width: 140px; }
 
@@ -484,7 +464,6 @@ textarea:focus {
 #orders-section table:first-of-type th:nth-child(6),
 #orders-section table:first-of-type td:nth-child(6) { width: 130px; }
 
-/* Geçmiş Siparişler Tablosu (7 Sütun) */
 #orders-section table:last-of-type th:nth-child(1),
 #orders-section table:last-of-type td:nth-child(1) { width: 130px; }
 
@@ -506,7 +485,6 @@ textarea:focus {
 #orders-section table:last-of-type th:nth-child(7),
 #orders-section table:last-of-type td:nth-child(7) { width: 130px; }
 
-/* Ürün Yönetimi Sütunları */
 #products-section th:nth-child(1), #products-section td:nth-child(1) { width: 85px; }
 #products-section th:nth-child(2), #products-section td:nth-child(2) { width: 30%; }
 #products-section th:nth-child(3), #products-section td:nth-child(3) { width: 20%; }
@@ -514,7 +492,6 @@ textarea:focus {
 #products-section th:nth-child(5), #products-section td:nth-child(5) { width: 120px; white-space: nowrap; }
 #products-section th:nth-child(6), #products-section td:nth-child(6) { width: 180px; }
 
-/* Kullanıcı Yönetimi Sütunları */
 #kullanicilarSection th:nth-child(1), #kullanicilarSection td:nth-child(1) { width: 80px; }
 #kullanicilarSection th:nth-child(2), #kullanicilarSection td:nth-child(2) { width: 22%; font-weight: 500; color: #fff; }
 #kullanicilarSection th:nth-child(3), #kullanicilarSection td:nth-child(3) { width: 25%; }
@@ -526,7 +503,6 @@ textarea:focus {
 
 .text-muted-small { color: var(--text-muted); font-size: 13px; }
 
-/* SAYFALAMA BUTONLARI */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -565,12 +541,6 @@ textarea:focus {
     cursor: not-allowed;
     border-color: #222;
 }
-
-
-
-/* ============================================================
-   İNDİRİM KUTULARI YÖNETİMİ
-   ============================================================ */
 
 .indirim-kutulari-grid {
     display: grid;
@@ -720,10 +690,6 @@ textarea:focus {
     background-color: var(--gold-hover);
 }
 
-/* ============================================================
-   MODAL (AÇILIR PENCERE)
-   ============================================================ */
-
 .modal {
     display: none;
     position: fixed;
@@ -792,10 +758,6 @@ textarea:focus {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
-/* ============================================================
-   MOBİL VE RESPONSIVE UYARLAMALARI
-   ============================================================ */
 
 .sidebar-overlay {
     display: none;
@@ -898,7 +860,6 @@ textarea:focus {
         grid-template-columns: 1fr;
     }
 
-    /* MOBİL MASAÜSTÜ TABLO YATAY KAYDIRMA */
     .table-container {
         width: 100% !important;
         overflow-x: auto !important;
@@ -971,10 +932,8 @@ textarea:focus {
     }
 }
 
-/* 📱 Telefonda uzun formlar ekrana sığmazsa pencere içinde kaydırılsın (Kaydet butonuna her zaman ulaşılabilsin) */
 .modal-content { max-height: 92vh; max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
-/* 🔎 Sipariş arama çubuğu */
 .order-search-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
 .admin-search-wrapper.order-search { max-width: 520px; min-width: 260px; flex: 1 1 320px; }
 .order-search-info { color: var(--text-muted); font-size: 13px; }
@@ -982,5 +941,4 @@ textarea:focus {
     .admin-search-wrapper.order-search { min-width: 0; flex-basis: 100%; max-width: 100%; }
 }
 
-/* "Tamamla" gibi işlem butonları dar sütunda ortadan bölünmesin */
 .btn-success, td .btn-secondary, td .btn-danger { white-space: nowrap; }
